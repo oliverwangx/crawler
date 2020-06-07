@@ -31,6 +31,9 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	}
 
 	for _, r := range seeds {
+		if isDeuplicate(r.Url) {
+			continue
+		}
 		e.Scheduler.Submit(r)
 	}
 
@@ -41,6 +44,9 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 		}
 
 		for _, request := range result.Requests {
+			if isDeuplicate(request.Url) {
+				continue
+			}
 			e.Scheduler.Submit(request)
 
 		}
@@ -72,4 +78,15 @@ func createWorker(in chan Request, out chan ParseResult, ready ReadyNotifier) {
 			out <- result
 		}
 	}()
+}
+
+// 不能重启 说明map 算存硬盘
+var visitedUrls = make(map[string]bool)
+
+func isDeuplicate(url string) bool {
+	if visitedUrls[url] {
+		return true
+	}
+	visitedUrls[url] = true
+	return false
 }
