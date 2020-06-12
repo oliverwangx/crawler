@@ -16,6 +16,12 @@ func ItemSaver() chan interface{} {
 			item := <-out
 			log.Printf("Item Save: Got item "+"#%d: %v", itemCount, item)
 			itemCount++
+
+			_, err := Save(item)
+			if err != nil {
+				log.Printf("Item Saver: error "+"saving item %v: %v", item, err)
+			}
+
 		}
 	}()
 	return out
