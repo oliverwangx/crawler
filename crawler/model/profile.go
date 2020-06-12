@@ -3,6 +3,9 @@ package model
 import "encoding/json"
 
 type Profile struct {
+	Url string
+	Id  string
+
 	Name       string
 	Gender     string
 	Age        int

@@ -7,11 +7,7 @@ type Request struct {
 
 type ParseResult struct {
 	Requests []Request
-	Items    []interface{}
-}
-
-func NilParser([]byte) ParseResult {
-	return ParseResult{}
+	Items    []Item
 }
 
 type Item struct {
@@ -19,4 +15,8 @@ type Item struct {
 	Type    string
 	Id      string
 	Payload interface{}
+}
+
+func NilParser([]byte) ParseResult {
+	return ParseResult{}
 }
