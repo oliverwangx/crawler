@@ -63,7 +63,7 @@ func worker(r Request) (ParseResult, error) {
 			"fetching url %s: %v", r.Url, err)
 		return ParseResult{}, err
 	}
-	return r.ParserFunc(body), nil
+	return r.ParserFunc(body, r.Url), nil
 }
 
 func createWorker(in chan Request, out chan ParseResult, ready ReadyNotifier) {

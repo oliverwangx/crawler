@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"crawler/crawler/config"
 	"crawler/crawler/engine"
 	"crawler/crawler/model"
 	"regexp"
@@ -38,7 +37,7 @@ var idUrlRe = regexp.MustCompile(
 	`.*album\.zhenai\.com/u/([\d]+)`)
 
 func parseProfile(
-	contents []byte,
+	contents []byte, url string,
 	name string) engine.ParseResult {
 	profile := model.Profile{}
 	profile.Name = name
@@ -81,20 +80,23 @@ func parseProfile(
 		contents, xinzuoRe)
 
 	result := engine.ParseResult{
-		Items: []interface{}{profile},
+		Items: []engine.Item{
+			{
+				Url:     url,
+				Type:    "zhenai",
+				Id:      extractString([]byte(url), idUrlRe),
+				Payload: profile,
+			},
+		},
 	}
 
 	matches := guessRe.FindAllSubmatch(contents, -1)
 
 	for _, m := range matches {
-		name := string(m[2])
 		result.Requests = append(result.Requests,
 			engine.Request{
-				Url: string(m[1]),
-				ParserFunc: func(
-					c []byte) engine.ParseResult {
-					return parseProfile(c, name)
-				},
+				Url:        string(m[1]),
+				ParserFunc: ProfileParser(string(m[2])),
 			})
 	}
 
@@ -112,24 +114,31 @@ func extractString(
 	}
 }
 
-type ProfileParser struct {
-	userName string
-}
+//type ProfileParser struct {
+//	userName string
+//}
+//
+//func (p *ProfileParser) Parse(
+//	contents []byte,
+//	url string) engine.ParseResult {
+//	return parseProfile(contents, p.userName)
+//}
+//
+//func (p *ProfileParser) Serialize() (
+//	name string, args interface{}) {
+//	return config.ParseProfile, p.userName
+//}
+//
+//func NewProfileParser(
+//	name string) *ProfileParser {
+//	return &ProfileParser{
+//		userName: name,
+//	}
+//}
 
-func (p *ProfileParser) Parse(
-	contents []byte,
-	url string) engine.ParseResult {
-	return parseProfile(contents, p.userName)
-}
-
-func (p *ProfileParser) Serialize() (
-	name string, args interface{}) {
-	return config.ParseProfile, p.userName
-}
-
-func NewProfileParser(
-	name string) *ProfileParser {
-	return &ProfileParser{
-		userName: name,
+func ProfileParser(name string) engine.ParserFunc {
+	return func(
+		c []byte, url string) engine.ParseResult {
+		return parseProfile(c, url, name)
 	}
 }
